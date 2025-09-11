@@ -1,0 +1,65 @@
+{% load plugin_tags %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Home</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 24px; }
+    .wrap { max-width: 900px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: 16px; margin-top: 16px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; }
+    .muted { color: #6b7280; font-size: 14px; }
+    .pill { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid #e5e7eb; display: inline-block; }
+    .on { background: #ecfdf5; border-color: #10b981; color: #065f46; }
+    .off{ background: #fef2f2; border-color: #ef4444; color: #7f1d1d; }
+    a.btn { display:inline-block; padding:8px 12px; border-radius:8px; border:1px solid #e5e7eb; text-decoration:none; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h2>Merhaba, {{ request.user.get_username }}</h2>
+  <p class="muted">
+    Aktif şirket: <strong>{{ company }}</strong>
+  </p>
+
+  <h3>Plugin’ler</h3>
+  <div class="grid">
+    {% for p in plugins %}
+      {% plugin_enabled p.code as is_on %}
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>{{ p.title }}</strong>
+          <span class="pill {% if is_on %}on{% else %}off{% endif %}">
+            {% if is_on %}Açık{% else %}Kapalı{% endif %}
+          </span>
+        </div>
+
+        <div class="muted">code: {{ p.code }} • v{{ p.version }}</div>
+
+        <div style="margin-top:12px;">
+          {% if is_on %}
+            {# Plugin'e özel linkler #}
+            {% if p.code == "billing" %}
+              <a class="btn" href="/billing/">Faturalara git</a>
+            {% endif %}
+          {% else %}
+            <span class="muted">Bu plugin bu şirkette kapalı.</span>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <div class="card">Hiç plugin keşfedilmedi. <code>python manage.py sync_plugins</code> çalıştır.</div>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top:24px;">
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button class="btn" type="submit">Çıkış Yap</button>
+    </form>
+
+  </div>
+</div>
+</body>
+</html>
